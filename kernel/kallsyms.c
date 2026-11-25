@@ -167,6 +167,19 @@ static bool cleanup_symbol_name(char *s)
 {
 	char *res;
 
+	/*
+	 * GCC LTO appends ".lto_priv.<n>" to local symbols that get promoted
+	 * to global scope. Keep this in sync with scripts/kallsyms.c.
+	 */
+	if (IS_ENABLED(CONFIG_LTO_GCC)) {
+		res = strstr(s, ".lto_priv.");
+		if (res) {
+			*res = '\0';
+			return true;
+		}
+		return false;
+	}
+
 	if (!IS_ENABLED(CONFIG_LTO_CLANG))
 		return false;
 

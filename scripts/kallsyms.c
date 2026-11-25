@@ -80,6 +80,7 @@ static int all_symbols;
 static int absolute_percpu;
 static int base_relative;
 static int lto_clang;
+static int lto_gcc;
 
 static int token_profit[0x10000];
 
@@ -428,6 +429,18 @@ static char * s_name(char *buf)
 static void cleanup_symbol_name(char *s)
 {
 	char *p;
+
+	/*
+	 * GCC LTO promotes local symbols to global scope by appending
+	 * ".lto_priv.<n>". Strip it like ".llvm." so that static functions
+	 * and variables can still be looked up by their plain names.
+	 */
+	if (lto_gcc) {
+		p = strstr(s, ".lto_priv.");
+		if (p)
+			*p = '\0';
+		return;
+	}
 
 	if (!lto_clang)
 		return;
@@ -897,6 +910,7 @@ int main(int argc, char **argv)
 			{"absolute-percpu", no_argument, &absolute_percpu, 1},
 			{"base-relative",   no_argument, &base_relative,   1},
 			{"lto-clang",       no_argument, &lto_clang,       1},
+			{"lto-gcc",         no_argument, &lto_gcc,         1},
 			{},
 		};
 
