@@ -61,7 +61,7 @@ config ANDROID_DEBUG_SYMBOLS
 config ANDROID_VENDOR_HOOKS
 	bool "Android Vendor Hooks"
 	select TRACEPOINTS
-	select ANDROID_ONLY_VH_TRACING if !FTRACE
+	select ANDROID_ONLY_VH_TRACING if !FTRACE && !KSU
 	help
 	  Enable vendor hooks implemented as tracepoints
 
