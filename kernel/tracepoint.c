@@ -784,6 +784,44 @@ void syscall_unregfunc(void)
 		read_unlock(&tasklist_lock);
 	}
 }
+
+#if defined(CONFIG_ANDROID_ONLY_VH_TRACING) && defined(CONFIG_KSU)
+#include <trace/ksu_sys_enter.h>
+
+static const char __tpstrtab_sys_enter[]
+__section("__tracepoints_strings") = "sys_enter";
+
+struct tracepoint __tracepoint_sys_enter __used
+__section("__tracepoints") = {
+	.name = __tpstrtab_sys_enter,
+	.key = STATIC_KEY_INIT_FALSE,
+	/* No static call site; trace_sys_enter() calls the iterator directly */
+	.static_call_key = NULL,
+	.static_call_tramp = NULL,
+	.iterator = &__traceiter_sys_enter,
+	.regfunc = syscall_regfunc,
+	.unregfunc = syscall_unregfunc,
+	.funcs = NULL,
+};
+__TRACEPOINT_ENTRY(sys_enter);
+
+int __traceiter_sys_enter(void *__data, struct pt_regs *regs, long id)
+{
+	struct tracepoint_func *it_func_ptr;
+	void *it_func;
+
+	it_func_ptr = rcu_dereference_raw(__tracepoint_sys_enter.funcs);
+	if (it_func_ptr) {
+		do {
+			it_func = READ_ONCE(it_func_ptr->func);
+			__data = it_func_ptr->data;
+			((void (*)(void *, struct pt_regs *, long))it_func)
+				(__data, regs, id);
+		} while (READ_ONCE((++it_func_ptr)->func));
+	}
+	return 0;
+}
+#endif /* CONFIG_ANDROID_ONLY_VH_TRACING && CONFIG_KSU */
 #endif
 
 #ifdef CONFIG_ANDROID_VENDOR_HOOKS

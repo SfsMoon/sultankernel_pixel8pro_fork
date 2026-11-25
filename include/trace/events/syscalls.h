@@ -15,6 +15,9 @@
 
 #ifdef CONFIG_HAVE_SYSCALL_TRACEPOINTS
 
+#if defined(CONFIG_ANDROID_ONLY_VH_TRACING) && defined(CONFIG_KSU)
+#include <trace/ksu_sys_enter.h>
+#else
 TRACE_EVENT_FN(sys_enter,
 
 	TP_PROTO(struct pt_regs *regs, long id),
@@ -38,6 +41,7 @@ TRACE_EVENT_FN(sys_enter,
 
 	syscall_regfunc, syscall_unregfunc
 );
+#endif /* CONFIG_ANDROID_ONLY_VH_TRACING && CONFIG_KSU */
 
 TRACE_EVENT_FLAGS(sys_enter, TRACE_EVENT_FL_CAP_ANY)
 
