@@ -247,6 +247,18 @@ struct ftrace_likely_data {
 	__no_kcsan __no_sanitize_address __no_profile __no_sanitize_coverage \
 	__no_sanitize_memory
 
+/*
+ * __ksu_hookable: keep a function as a standalone, unmodified copy so that
+ * KernelSU-Next can resolve it through kallsyms and kprobe it. With GCC LTO,
+ * plain noinline isn't enough since IPA can still clone the function
+ * (e.g. .constprop.N), which changes its calling convention.
+ */
+#if defined(CONFIG_KSU) && defined(CONFIG_CC_IS_GCC)
+#define __ksu_hookable __attribute__((__noipa__))
+#else
+#define __ksu_hookable
+#endif
+
 #endif /* __KERNEL__ */
 
 #endif /* __ASSEMBLY__ */
