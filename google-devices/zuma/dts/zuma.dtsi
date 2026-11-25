@@ -1832,3 +1832,16 @@
 		};
 	};
 };
+
+/*
+ * Android 17 board overlays (dtbo) for shiba/husky disable the Wonder Wi-Fi
+ * node that was added to the zuma base dtb in that release. Provide a
+ * disabled stub with the same label so that the stock A17 dtbo still applies
+ * on top of this dtb; otherwise the bootloader fails to apply the overlay
+ * and refuses to boot.
+ */
+/ {
+	wonder_node: wonder-device {
+		status = "disabled";
+	};
+};
