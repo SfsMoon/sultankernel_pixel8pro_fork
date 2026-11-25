@@ -39,6 +39,20 @@ git clone -q --depth 1 "$AK3_REPO" "$STAGE"
 rm -rf "$STAGE"/.git "$STAGE"/.github "$STAGE"/README.md "$STAGE"/modules \
        "$STAGE"/patch "$STAGE"/ramdisk
 cp "$SRC/scripts/ksun/anykernel.sh" "$STAGE/anykernel.sh"
+
+# AnyKernel3 ships 32-bit ARM tools, which can't run on the 64-bit-only
+# Pixel 8 series. Replace busybox/magiskboot/magiskpolicy with the arm64
+# builds from an official Magisk release.
+MAGISK_VER=v31.1
+MAGISK_SHA256=89cefac0a318afa39fb3880c45c87b036c05bc1ebf02a7a715b7f8d7c26ac6e7
+MAGISK_APK=$OUT/Magisk-$MAGISK_VER.apk
+[ -f "$MAGISK_APK" ] || curl -fsSL -o "$MAGISK_APK" \
+	"https://github.com/topjohnwu/Magisk/releases/download/$MAGISK_VER/Magisk-$MAGISK_VER.apk"
+echo "$MAGISK_SHA256  $MAGISK_APK" | sha256sum -c -
+for t in busybox magiskboot magiskpolicy; do
+	unzip -p "$MAGISK_APK" "lib/arm64-v8a/lib$t.so" > "$STAGE/tools/$t"
+done
+chmod 755 "$STAGE"/tools/*
 mkdir "$STAGE/boot-files" "$STAGE/vendor_kernel_boot-files"
 cp "$OUT/arch/arm64/boot/Image" "$STAGE/boot-files/Image"
 # Same order as ZUMA_DTBS in google-devices/zuma/constants.bzl
