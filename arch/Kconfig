@@ -50,7 +50,7 @@ config GENERIC_ENTRY
 
 config KPROBES
 	bool "Kprobes"
-	depends on MODULES
+	depends on MODULES || INTEGRATE_MODULES
 	depends on HAVE_KPROBES
 	select KALLSYMS
 	select TASKS_RCU if PREEMPTION
